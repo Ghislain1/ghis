@@ -17,7 +17,7 @@ const compiled = ts.transpileModule(source, {
 const moduleShim = { exports: {} }
 new Function('module', 'exports', 'require', compiled)(moduleShim, moduleShim.exports, require)
 
-const { lessonMeta, lessonFrames, courses, defaultCourseId, getCourse } = moduleShim.exports
+const { lessonMeta, lessonFrames, courses, defaultCourseId, getCourse, activeCourseId } = moduleShim.exports
 const questions = lessonFrames.filter((frame) => frame.type === 'question')
 const contents = lessonFrames.filter((frame) => frame.type === 'content')
 
@@ -66,6 +66,7 @@ test('getCourse resolves ids and falls back to the default course', () => {
 })
 
 test('default exports point at the default course', () => {
+  assert.equal(activeCourseId, defaultCourseId)
   assert.equal(lessonMeta, getCourse(defaultCourseId).meta)
   assert.equal(lessonFrames, getCourse(defaultCourseId).frames)
 })

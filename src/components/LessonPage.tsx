@@ -9,10 +9,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
   Snackbar,
+  TextField,
   Typography,
 } from '@mui/material'
-import { lessonFrames, lessonMeta } from '../data/lesson'
+import { activeCourseId, courses, defaultCourseId, getCourse, type CourseId } from '../data/lesson'
 import type { FrameResult, QuestionFrame as QuestionFrameType } from '../types'
 import { CompletionFrame } from './CompletionFrame'
 import { ContentFrame } from './ContentFrame'
@@ -26,14 +28,17 @@ export function LessonPage() {
   const [results, setResults] = useState<Record<string, FrameResult>>({})
   const [explainOpen, setExplainOpen] = useState(false)
   const [toast, setToast] = useState('')
+  const [courseId, setCourseId] = useState<CourseId>(activeCourseId)
 
-  const frame = index < lessonFrames.length ? lessonFrames[index] : undefined
-  const isComplete = index >= lessonFrames.length
-  const isLast = index === lessonFrames.length - 1
+  const { meta, frames } = useMemo(() => getCourse(courseId), [courseId])
+
+  const frame = index < frames.length ? frames[index] : undefined
+  const isComplete = index >= frames.length
+  const isLast = index === frames.length - 1
 
   const questionFrames = useMemo(
-    () => lessonFrames.filter((item): item is QuestionFrameType => item.type === 'question'),
-    [],
+    () => frames.filter((item): item is QuestionFrameType => item.type === 'question'),
+    [frames],
   )
   const correctCount = questionFrames.filter((question) => results[question.id] === 'correct').length
 
@@ -79,11 +84,11 @@ export function LessonPage() {
   }
 
   const handleContinue = () => {
-    setIndex((current) => Math.min(current + 1, lessonFrames.length))
+    setIndex((current) => Math.min(current + 1, frames.length))
   }
 
   const handleStepClick = (step: number) => {
-    setIndex(Math.max(0, Math.min(step, lessonFrames.length - 1)))
+    setIndex(Math.max(0, Math.min(step, frames.length - 1)))
   }
 
   const handleBack = () => {
@@ -100,8 +105,27 @@ export function LessonPage() {
     setIndex(0)
   }
 
+  const handleCourseChange = (nextId: CourseId) => {
+    if (nextId === courseId) return
+
+    setCourseId(nextId)
+    setAnswers({})
+    setResults({})
+    setIndex(0)
+    setExplainOpen(false)
+
+    const url = new URL(window.location.href)
+    if (nextId === defaultCourseId) {
+      url.searchParams.delete('course')
+    } else {
+      url.searchParams.set('course', nextId)
+    }
+    url.hash = ''
+    window.history.replaceState(null, '', url.toString())
+  }
+
   const explainText = isComplete
-    ? `You have reached the end of “${lessonMeta.lesson}”. This course covered the .NET platform, C# types and OOP, the dotnet CLI, collections and LINQ, async, memory, Entity Framework Core, ASP.NET Core, WPF and security. Use the hexagons above or “Review last screen” to revisit any concept.`
+    ? `You have reached the end of “${meta.lesson}”. Use the hexagons above, the course menu, or “Review last screen” to revisit any concept.`
     : (frame?.aiNote ?? 'Use the lesson content on this screen to guide your answer.')
 
   const footerText = (() => {
@@ -122,8 +146,42 @@ export function LessonPage() {
           bgcolor: 'background.paper',
         }}
       >
-        <TopBar meta={lessonMeta} onBack={handleBack} onExplain={() => setExplainOpen(true)} />
-        <ProgressHexagons total={lessonFrames.length} current={index} onStepClick={handleStepClick} />
+        <TopBar meta={meta} onBack={handleBack} onExplain={() => setExplainOpen(true)} />
+        <Box
+          sx={{
+            bgcolor: 'background.paper',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            px: { xs: 2, sm: 3 },
+          }}
+        >
+          <Box
+            sx={{
+              maxWidth: 1080,
+              mx: 'auto',
+              py: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <TextField
+              select
+              size="small"
+              label="Course"
+              value={courseId}
+              onChange={(event) => handleCourseChange(event.target.value as CourseId)}
+              sx={{ minWidth: { xs: '100%', sm: 320 } }}
+            >
+              {courses.map((item) => (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.meta.course}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+        </Box>
+        <ProgressHexagons total={frames.length} current={index} onStepClick={handleStepClick} />
       </Box>
 
       <Box component="main" sx={{ flexGrow: 1 }}>
@@ -138,12 +196,12 @@ export function LessonPage() {
         >
           {isComplete ? (
             <CompletionFrame
-              meta={lessonMeta}
-              screenCount={lessonFrames.length}
+              meta={meta}
+              screenCount={frames.length}
               questionCount={questionFrames.length}
               correctCount={correctCount}
               onRestart={handleRestart}
-              onReview={() => setIndex(lessonFrames.length - 1)}
+              onReview={() => setIndex(frames.length - 1)}
             />
           ) : frame ? (
             <Box key={frame.id} sx={{ animation: 'frameIn .50s ease both' }}>
@@ -245,7 +303,7 @@ export function LessonPage() {
         <DialogContent>
           <Typography sx={{ lineHeight: 1.75, color: 'text.primary' }}>{explainText}</Typography>
           <Typography variant="caption" sx={{ display: 'block', mt: 2.5, color: 'text.secondary' }}>
-            Study guidance based on this screen. Always verify with the official .NET documentation.
+            Study guidance based on this screen. Always verify with the official documentation for this topic.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
