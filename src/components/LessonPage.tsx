@@ -101,7 +101,7 @@ export function LessonPage() {
   }
 
   const explainText = isComplete
-    ? `You have reached the end of “${lessonMeta.lesson}”. The lesson covered problem-first AI adoption, choosing a measurable pilot, and identifying high-volume, repetitive workflows. Use the hexagons above or “Review last screen” to revisit the content.`
+    ? `You have reached the end of “${lessonMeta.lesson}”. This course covered the .NET platform, C# types and OOP, the dotnet CLI, collections and LINQ, async, memory, Entity Framework Core, ASP.NET Core, WPF and security. Use the hexagons above or “Review last screen” to revisit any concept.`
     : (frame?.aiNote ?? 'Use the lesson content on this screen to guide your answer.')
 
   const footerText = (() => {
@@ -146,7 +146,7 @@ export function LessonPage() {
               onReview={() => setIndex(lessonFrames.length - 1)}
             />
           ) : frame ? (
-            <Box key={frame.id} sx={{ animation: 'frameIn .35s ease both' }}>
+            <Box key={frame.id} sx={{ animation: 'frameIn .50s ease both' }}>
               {frame.type === 'content' ? (
                 <ContentFrame frame={frame} />
               ) : (
@@ -245,7 +245,7 @@ export function LessonPage() {
         <DialogContent>
           <Typography sx={{ lineHeight: 1.75, color: 'text.primary' }}>{explainText}</Typography>
           <Typography variant="caption" sx={{ display: 'block', mt: 2.5, color: 'text.secondary' }}>
-            AI-generated guidance. Always check with your course materials.
+            Study guidance based on this screen. Always verify with the official .NET documentation.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
