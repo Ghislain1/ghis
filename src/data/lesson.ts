@@ -1598,5 +1598,6 @@ function resolveCourseId(): CourseId {
 
 const activeCourse = getCourse(resolveCourseId())
 
+export const activeCourseId = activeCourse.id
 export const lessonMeta = activeCourse.meta
 export const lessonFrames = activeCourse.frames
