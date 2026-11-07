@@ -44,14 +44,14 @@ const q = (
   aiNote: aiNote ?? 'Connect this answer to the .NET concept explained on this screen.',
 })
 
-export const lessonMeta: LessonMeta = {
+const dotnetMeta: LessonMeta = {
   course: '.NET Framework — C# & Modern .NET',
   chapter: 'Complete course · 16 chapters',
   lesson: 'C# .NET: CLI, language, ASP.NET Core, EF Core and WPF',
   estimatedMinutes: 360,
 }
 
-export const lessonFrames: LessonFrame[] = [
+const dotnetFrames: LessonFrame[] = [
   c(
     'c1-intro',
     'CHAPTER 1 · .NET PLATFORM',
@@ -1039,3 +1039,564 @@ export const lessonFrames: LessonFrame[] = [
     ['Only when Windows updates', false],
   ], 'Modern .NET ships a major version each November. Even-numbered versions are LTS (three years of support); odd-numbered versions are STS (18 months).'),
 ]
+
+const commandMeta: LessonMeta = {
+  course: 'dotnet CLI — Command Line Essentials',
+  chapter: '4 chapters · 20 questions',
+  lesson: 'Master the dotnet command line',
+  estimatedMinutes: 60,
+}
+
+const commandFrames: LessonFrame[] = [
+  c(
+    'command-c1',
+    'DOTNET CLI · CHAPTER 1',
+    'Create and inspect projects.',
+    [
+      'The dotnet CLI ships with the SDK and scaffolds every project type: console, class library, Web API, tests, and more. dotnet new creates from a template, dotnet new list shows what is available, and dotnet --info reports the installed SDKs and runtimes.',
+      'Use -o to choose the output folder and -n to choose the project name. Templates accept extra options through --help, which is often faster than searching the documentation.',
+    ],
+    'Start every new project with dotnet new list and dotnet new <template> --help.',
+    'This chapter covers project creation and SDK inspection commands.',
+  ),
+  c(
+    'command-c2',
+    'DOTNET CLI · CHAPTER 2',
+    'Restore, build, and run.',
+    [
+      'dotnet restore resolves NuGet dependencies. dotnet build compiles the project and writes output under bin, and dotnet run builds and launches the app in one step. dotnet watch improves the inner loop by rebuilding and restarting on file changes.',
+      'Configuration changes the output shape: Debug keeps symbols and optimises less, while Release enables optimisations. Use --no-restore or --no-build to skip steps that already ran in a pipeline.',
+    ],
+    'build and run imply restore unless you pass --no-restore.',
+    'This chapter covers the daily build and run loop together with the most useful flags.',
+  ),
+  q('command-q1', 'CHECK · DOTNET CLI', 'Which command lists the installed project templates?', [
+    ['dotnet new list', true],
+    ['dotnet templates', false],
+    ['dotnet init --list', false],
+    ['dotnet list templates', false],
+  ], 'dotnet new list (or dotnet new --list) prints the available templates and their short names.'),
+  q('command-q2', 'CHECK · DOTNET CLI', 'Which of these are real dotnet new templates?', [
+    ['console', true],
+    ['webapi', true],
+    ['xunit', true],
+    ['npm', false],
+  ], 'console, webapi, classlib, xunit, and many others are real templates. npm is a Node.js package manager, not a dotnet template.', true),
+  q('command-q3', 'CHECK · DOTNET CLI', 'Which command shows the installed SDK and runtime versions?', [
+    ['dotnet --info', true],
+    ['dotnet --version', false, 'That prints only the current SDK version.'],
+    ['dotnet info --all', false],
+    ['dotnet list sdk', false],
+  ], 'dotnet --info reports the SDK, runtimes, host, and environment details. dotnet --version prints only the selected SDK version.'),
+  q('command-q4', 'CHECK · DOTNET CLI', 'How do you create a console project in a folder named MyApp?', [
+    ['dotnet new console -o MyApp', true],
+    ['dotnet new console --folder MyApp', false],
+    ['dotnet create console MyApp', false],
+    ['dotnet new console > MyApp', false],
+  ], 'The -o (or --output) option selects the output directory. The project is created inside MyApp.'),
+  q('command-q5', 'CHECK · DOTNET CLI', 'Which option sets the project name independently of the output folder?', [
+    ['-n or --name', true],
+    ['-o or --output', false, 'That sets the folder, not the project name.'],
+    ['-f or --framework', false],
+    ['-c or --configuration', false],
+  ], 'Use -n to set the project name and -o to set the folder when they should differ.'),
+  q('command-q6', 'CHECK · DOTNET CLI', 'What does dotnet restore do?', [
+    ['Downloads and resolves NuGet dependencies for the project', true],
+    ['Deletes bin and obj', false],
+    ['Runs the application', false],
+    ['Formats the source code', false],
+  ], 'Restore reads the project file and package references, contacts the NuGet feeds, and writes the assets file under obj.'),
+  q('command-q7', 'CHECK · DOTNET CLI', 'Which options are valid for dotnet build?', [
+    ['-c Release', true],
+    ['--no-restore', true],
+    ['-o out', true],
+    ['--publish', false, 'Publishing is a separate dotnet publish command.'],
+  ], 'build accepts configuration, output, and restore-control flags. Publishing is a separate verb.', true),
+  q('command-q8', 'CHECK · DOTNET CLI', 'What does dotnet run do?', [
+    ['Builds and runs the project', true],
+    ['Runs the project only if it is published', false],
+    ['Starts the ASP.NET Core development server only', false],
+    ['Packs the project into a NuGet package', false],
+  ], 'dotnet run compiles the project and launches the resulting application, forwarding arguments after -- to the app.'),
+  q('command-q9', 'CHECK · DOTNET CLI', 'Which command rebuilds and restarts the app when source files change?', [
+    ['dotnet watch', true],
+    ['dotnet serve', false],
+    ['dotnet hot', false],
+    ['dotnet dev', false],
+  ], 'dotnet watch is a file watcher that rebuilds and reruns the project on changes. dotnet watch run is also common.'),
+  q('command-q10', 'CHECK · DOTNET CLI', 'Where does dotnet build -c Release write the main output?', [
+    ['bin/Release/<target-framework>/', true],
+    ['obj/Release/', false, 'obj holds intermediate files, not the final output.'],
+    ['publish/Release/', false],
+    ['dist/Release/', false],
+  ], 'Build output goes to bin/<Configuration>/<TargetFramework>/ by default. The publish folder is produced by dotnet publish.'),
+  c(
+    'command-c3',
+    'DOTNET CLI · CHAPTER 3',
+    'Test, publish, and package.',
+    [
+      'dotnet test discovers and runs test projects. dotnet publish produces a deployable folder; by default it is framework-dependent, but -r with --self-contained bundles the runtime. dotnet pack turns a class library into a NuGet package.',
+      'In CI, run restore once, then build with --no-restore, then test with --no-build. That keeps each step explicit and avoids repeating work.',
+    ],
+    'Use -c Release for anything that leaves your machine.',
+    'This chapter covers testing, publishing, and packaging commands.',
+  ),
+  c(
+    'command-c4',
+    'DOTNET CLI · CHAPTER 4',
+    'Solutions, references, tools, and secrets.',
+    [
+      'A solution groups related projects. dotnet new sln creates one; dotnet sln add, list, and remove manage its projects. Project references glue projects together with dotnet add reference.',
+      'The CLI is extensible. dotnet tool install adds global or local tools such as dotnet-ef, and dotnet user-secrets stores development secrets outside the repository.',
+    ],
+    'Prefer local tool manifests so every teammate and CI job uses the same tool version.',
+    'This chapter covers solution management, references, tools, and user secrets.',
+  ),
+  q('command-q11', 'CHECK · DOTNET CLI', 'Which command runs the tests in a test project?', [
+    ['dotnet test', true],
+    ['dotnet run tests', false],
+    ['dotnet check', false],
+    ['dotnet verify', false],
+  ], 'dotnet test discovers test frameworks in the project, runs them, and reports results.'),
+  q('command-q12', 'CHECK · DOTNET CLI', 'Which options are valid for dotnet test?', [
+    ['--filter', true],
+    ['--no-build', true],
+    ['--collect:"XPlat Code Coverage"', true],
+    ['--publish', false],
+  ], 'Test supports filtering, skipping the build, and collecting coverage. Publishing is a separate command.', true),
+  q('command-q13', 'CHECK · DOTNET CLI', 'Which command publishes a self-contained Linux x64 build?', [
+    ['dotnet publish -c Release -r linux-x64 --self-contained true', true],
+    ['dotnet build -r linux-x64 --bundle', false],
+    ['dotnet publish --os linux', false],
+    ['dotnet pack -r linux-x64', false],
+  ], 'A runtime identifier (-r) plus --self-contained bundles the runtime for that platform. dotnet publish produces the deployable output.'),
+  q('command-q14', 'CHECK · DOTNET CLI', 'What does a default dotnet publish produce?', [
+    ['A framework-dependent deployment that requires the runtime on the target machine', true],
+    ['A self-contained deployment with the runtime bundled', false],
+    ['A Docker image', false],
+    ['A NuGet package', false],
+  ], 'Without -r and --self-contained, publish is framework-dependent. The target host must have a compatible .NET runtime.'),
+  q('command-q15', 'CHECK · DOTNET CLI', 'Which command creates a NuGet package from a class library?', [
+    ['dotnet pack', true],
+    ['dotnet publish', false],
+    ['dotnet build --package', false],
+    ['dotnet nuget pack', false],
+  ], 'dotnet pack builds the project and writes a .nupkg file, usually under bin/Release.'),
+  q('command-q16', 'CHECK · DOTNET CLI', 'Which command creates a new solution file?', [
+    ['dotnet new sln', true],
+    ['dotnet new solution', false],
+    ['dotnet sln new', false],
+    ['dotnet create sln', false],
+  ], 'dotnet new sln scaffolds a .sln file. Use -n to set the solution name.'),
+  q('command-q17', 'CHECK · DOTNET CLI', 'Which are valid dotnet sln commands?', [
+    ['dotnet sln add', true],
+    ['dotnet sln list', true],
+    ['dotnet sln remove', true],
+    ['dotnet sln compile', false],
+  ], 'The solution command adds, lists, and removes projects. Compilation is done by dotnet build, not dotnet sln.', true),
+  q('command-q18', 'CHECK · DOTNET CLI', 'How do you add a project reference to another project?', [
+    ['dotnet add reference ../Lib/Lib.csproj', true],
+    ['dotnet reference add ../Lib/Lib.csproj', false],
+    ['dotnet add package ../Lib/Lib.csproj', false],
+    ['dotnet sln add ../Lib/Lib.csproj', false],
+  ], 'dotnet add reference updates the .csproj with a ProjectReference. The sln command adds projects to a solution, not references.'),
+  q('command-q19', 'CHECK · DOTNET CLI', 'How do you install the EF Core CLI as a global tool?', [
+    ['dotnet tool install --global dotnet-ef', true],
+    ['dotnet install dotnet-ef --global', false],
+    ['dotnet ef install --global', false],
+    ['npm install -g dotnet-ef', false],
+  ], 'dotnet tool install --global installs the tool for the current user. Local tool manifests are the reproducible alternative.'),
+  q('command-q20', 'CHECK · DOTNET CLI', 'Which are valid dotnet user-secrets commands?', [
+    ['dotnet user-secrets set', true],
+    ['dotnet user-secrets list', true],
+    ['dotnet user-secrets clear', true],
+    ['dotnet user-secrets deploy', false],
+  ], 'User secrets can be set, listed, and cleared. They are for local development and are never deployed.', true),
+]
+
+const dockerMeta: LessonMeta = {
+  course: 'Docker — Containers from Zero to Compose',
+  chapter: '4 chapters · 20 questions',
+  lesson: 'Build, run and ship containers',
+  estimatedMinutes: 75,
+}
+
+const dockerFrames: LessonFrame[] = [
+  c(
+    'docker-c1',
+    'DOCKER · CHAPTER 1',
+    'Images and containers.',
+    [
+      'An image is an immutable template made of read-only layers. A container is a running instance of an image with a writable layer on top. You pull images from a registry, run containers locally, and push images back for others to use.',
+      'Containers share the host kernel but have their own filesystem, network namespace, and process tree. That is why they start quickly and stay much lighter than virtual machines.',
+    ],
+    'Think image = class, container = instance.',
+    'This chapter introduces images, containers, and the lifecycle commands around them.',
+  ),
+  c(
+    'docker-c2',
+    'DOCKER · CHAPTER 2',
+    'Writing a Dockerfile.',
+    [
+      'A Dockerfile is a recipe for building an image. FROM selects the base image, COPY brings files in, RUN executes build steps, and CMD or ENTRYPOINT defines what starts when the container runs.',
+      'Order instructions from least to most frequently changing so layer caching works. Multi-stage builds let you compile in one stage and copy only the artifacts into a small final image.',
+    ],
+    'A .dockerignore keeps build contexts small and prevents secrets from being copied into images.',
+    'This chapter covers Dockerfile instructions, entrypoints, caching, and multi-stage builds.',
+  ),
+  q('docker-q1', 'CHECK · DOCKER', 'What is the difference between an image and a container?', [
+    ['An image is a template; a container is a running instance of it', true],
+    ['An image is a running process; a container is a file', false],
+    ['They are the same thing', false],
+    ['A container is stored in a registry; an image runs locally', false],
+  ], 'Images are immutable templates. Containers add a writable layer and run processes based on an image.'),
+  q('docker-q2', 'CHECK · DOCKER', 'Which are Docker objects?', [
+    ['Image', true],
+    ['Container', true],
+    ['Volume', true],
+    ['Kernel', false],
+  ], 'Docker manages images, containers, volumes, and networks. The kernel is provided by the host operating system.', true),
+  q('docker-q3', 'CHECK · DOCKER', 'What does docker run do?', [
+    ['Creates and starts a container from an image', true],
+    ['Only downloads an image', false],
+    ['Only builds an image', false],
+    ['Deletes a stopped container', false],
+  ], 'docker run pulls the image if needed, creates a container, and starts it with the given command and options.'),
+  q('docker-q4', 'CHECK · DOCKER', 'Which command lists all containers, including stopped ones?', [
+    ['docker ps -a', true],
+    ['docker ps', false, 'That lists only running containers by default.'],
+    ['docker images -a', false],
+    ['docker container list --stopped', false],
+  ], 'docker ps shows running containers; -a includes stopped and created containers.'),
+  q('docker-q5', 'CHECK · DOCKER', 'Which command downloads an image from a registry?', [
+    ['docker pull', true],
+    ['docker push', false],
+    ['docker fetch', false],
+    ['docker get', false],
+  ], 'docker pull downloads image layers. docker push uploads them to a registry.'),
+  q('docker-q6', 'CHECK · DOCKER', 'Which Dockerfile instruction selects the base image?', [
+    ['FROM', true],
+    ['BASE', false],
+    ['IMAGE', false],
+    ['RUN', false],
+  ], 'FROM must be the first instruction (apart from comments and ARG). It selects the parent image for the build.'),
+  q('docker-q7', 'CHECK · DOCKER', 'Which are valid Dockerfile instructions?', [
+    ['FROM', true],
+    ['COPY', true],
+    ['RUN', true],
+    ['SELECT', false],
+  ], 'FROM, COPY, RUN, WORKDIR, ENV, CMD, and ENTRYPOINT are real instructions. SELECT is SQL.', true),
+  q('docker-q8', 'CHECK · DOCKER', 'What is the relationship between ENTRYPOINT and CMD?', [
+    ['ENTRYPOINT sets the executable; CMD supplies default arguments that can be overridden', true],
+    ['CMD sets the executable; ENTRYPOINT supplies arguments', false],
+    ['They are aliases', false],
+    ['Both can only be used once and cancel each other', false],
+  ], 'ENTRYPOINT defines the command that always runs. CMD provides default arguments, which a docker run command can replace.'),
+  q('docker-q9', 'CHECK · DOCKER', 'Why use a multi-stage Dockerfile?', [
+    ['To compile in one stage and keep the final image small', true],
+    ['To run multiple containers in one image', false],
+    ['To avoid writing a Dockerfile', false],
+    ['To disable layer caching', false],
+  ], 'Multi-stage builds separate build dependencies from runtime artifacts, so the final image ships only what it needs.'),
+  q('docker-q10', 'CHECK · DOCKER', 'What is the purpose of .dockerignore?', [
+    ['Exclude files from the build context', true],
+    ['Ignore containers during docker ps', false],
+    ['Skip Dockerfile instructions', false],
+    ['Hide layers from the registry', false],
+  ], 'The build context is sent to the daemon. .dockerignore keeps it small and prevents copying secrets or node_modules into the image.'),
+  c(
+    'docker-c3',
+    'DOCKER · CHAPTER 3',
+    'Ports, volumes, and environment.',
+    [
+      'Containers are isolated by default. Publish a port with -p host:container so the host can reach the service. Environment variables configure the app at run time with -e or an env file.',
+      'Container filesystems disappear with the container. Named volumes keep data beyond the container lifecycle, bind mounts expose host directories, and tmpfs keeps data in memory.',
+    ],
+    'Map ports as -p 8080:80: host port first, container port second.',
+    'This chapter covers networking, persistence, and runtime configuration for containers.',
+  ),
+  c(
+    'docker-c4',
+    'DOCKER · CHAPTER 4',
+    'Compose, build, and registries.',
+    [
+      'Docker Compose describes a multi-container application in a YAML file. docker compose up starts the services, -d runs them in the background, and docker compose down stops and removes them.',
+      'docker build -t tags an image, and docker push publishes it to a registry such as Docker Hub or GitHub Container Registry. Compose can also build images from a Dockerfile when the service declares build.',
+    ],
+    'Keep compose files declarative: version pinned images, named volumes, and environment values from a .env file.',
+    'This chapter covers Compose, image tagging, and publishing to a registry.',
+  ),
+  q('docker-q11', 'CHECK · DOCKER', 'What does -p 8080:80 mean in docker run?', [
+    ['Host port 8080 maps to container port 80', true],
+    ['Container port 8080 maps to host port 80', false],
+    ['Both ports are 8080', false],
+    ['Port 80 is exposed only on localhost', false],
+  ], 'The syntax is -p <host-port>:<container-port>. Requests to host 8080 are forwarded to port 80 inside the container.'),
+  q('docker-q12', 'CHECK · DOCKER', 'Why use a named volume?', [
+    ['To persist data beyond the container lifecycle', true],
+    ['To publish a port', false],
+    ['To speed up the build', false],
+    ['To store the Dockerfile', false],
+  ], 'Named volumes are managed by Docker and survive container removal. They are the usual choice for databases.'),
+  q('docker-q13', 'CHECK · DOCKER', 'Which are Docker mount types?', [
+    ['Named volume', true],
+    ['Bind mount', true],
+    ['tmpfs', true],
+    ['Swap file', false],
+  ], 'Docker supports volumes, bind mounts, and tmpfs mounts. A swap file is an operating-system paging mechanism, not a mount type.', true),
+  q('docker-q14', 'CHECK · DOCKER', 'Which flag sets an environment variable for a container?', [
+    ['-e KEY=value', true],
+    ['--env-file-only KEY=value', false],
+    ['-p KEY=value', false],
+    ['-v KEY=value', false],
+  ], 'Use -e or --env to pass environment variables, or --env-file to load several from a file.'),
+  q('docker-q15', 'CHECK · DOCKER', 'Which command shows the output written by a container?', [
+    ['docker logs', true],
+    ['docker output', false],
+    ['docker console', false],
+    ['docker print', false],
+  ], 'docker logs prints stdout and stderr from a container. Add -f to follow the stream.'),
+  q('docker-q16', 'CHECK · DOCKER', 'What does docker compose up -d do?', [
+    ['Starts the services in the background', true],
+    ['Builds images only', false],
+    ['Deletes the services', false],
+    ['Prints the compose file', false],
+  ], 'The -d flag runs services detached. Without it, Compose attaches to the logs.'),
+  q('docker-q17', 'CHECK · DOCKER', 'Which are top-level keys in a Compose file?', [
+    ['services', true],
+    ['networks', true],
+    ['volumes', true],
+    ['Dockerfile', false],
+  ], 'Compose files have services, networks, and volumes. A Dockerfile is referenced inside a service build section, not as a top-level key.', true),
+  q('docker-q18', 'CHECK · DOCKER', 'What does docker build -t myapp:1.0 . do?', [
+    ['Builds an image from the current directory and tags it myapp:1.0', true],
+    ['Runs the myapp image', false],
+    ['Pushes the image to a registry', false],
+    ['Creates a container named myapp', false],
+  ], 'The -t flag names and tags the image, and the trailing dot selects the current directory as the build context.'),
+  q('docker-q19', 'CHECK · DOCKER', 'Which command uploads an image to a registry?', [
+    ['docker push', true],
+    ['docker pull', false],
+    ['docker send', false],
+    ['docker upload', false],
+  ], 'docker push uploads tagged image layers to the registry. You usually log in first with docker login.'),
+  q('docker-q20', 'CHECK · DOCKER', 'What does docker compose down -v do?', [
+    ['Stops and removes containers, and also removes named volumes', true],
+    ['Removes only the images', false],
+    ['Starts the services with volumes', false],
+    ['Deletes the compose file', false],
+  ], 'down removes containers and networks; -v also removes the declared volumes, deleting their data.'),
+]
+
+const fastapiMeta: LessonMeta = {
+  course: 'FastAPI — Modern Python APIs',
+  chapter: '4 chapters · 20 questions',
+  lesson: 'Build typed, async APIs with FastAPI',
+  estimatedMinutes: 75,
+}
+
+const fastapiFrames: LessonFrame[] = [
+  c(
+    'fastapi-c1',
+    'FASTAPI · CHAPTER 1',
+    'Routes, parameters, and the dev server.',
+    [
+      'FastAPI is a modern Python web framework built on Starlette for the web layer and Pydantic for data validation. Declare a route with a decorator such as @app.get, write a Python function, and FastAPI generates the OpenAPI schema and interactive docs for you.',
+      'Path parameters are declared in the route string and matched by function arguments. Query parameters are function arguments that are not part of the path. Uvicorn runs the app in development with reload enabled.',
+    ],
+    'Run the dev server with uvicorn main:app --reload, then open /docs.',
+    'This chapter introduces routing, parameters, and running a FastAPI application.',
+  ),
+  c(
+    'fastapi-c2',
+    'FASTAPI · CHAPTER 2',
+    'Pydantic models and validation.',
+    [
+      'Pydantic models describe the shape and types of request and response data. Declare a class based on BaseModel and use it as a parameter to receive a validated JSON body. Invalid input is rejected automatically with a 422 response.',
+      'Field adds constraints such as minimum length or numeric ranges, and response_model validates and filters what the API returns. Nested models compose cleanly for larger payloads.',
+    ],
+    'Validation happens before your handler runs, so the handler receives clean, typed data.',
+    'This chapter covers Pydantic models, constraints, response models, and validation errors.',
+  ),
+  q('fastapi-q1', 'CHECK · FASTAPI', 'Which two libraries does FastAPI build on?', [
+    ['Starlette and Pydantic', true],
+    ['Flask and SQLAlchemy', false],
+    ['Django and DRF', false],
+    ['Tornado and Marshmallow', false],
+  ], 'Starlette provides the ASGI web layer and Pydantic provides data validation and serialization.'),
+  q('fastapi-q2', 'CHECK · FASTAPI', 'Which decorators define routes in FastAPI?', [
+    ['@app.get', true],
+    ['@app.post', true],
+    ['@app.put', true],
+    ['@app.fetch', false],
+  ], 'FastAPI exposes HTTP verb decorators such as get, post, put, patch, and delete. fetch is a JavaScript API, not a FastAPI decorator.', true),
+  q('fastapi-q3', 'CHECK · FASTAPI', 'How is a path parameter declared?', [
+    ['In the route string, with a matching function argument', true],
+    ['Only in the request body', false],
+    ['Only in a query string', false],
+    ['In a separate YAML file', false],
+  ], 'A route like /items/{item_id} declares item_id in the path; the function receives it as an argument.'),
+  q('fastapi-q4', 'CHECK · FASTAPI', 'Which command runs a FastAPI app in development with auto-reload?', [
+    ['uvicorn main:app --reload', true],
+    ['fastapi run --watch', false],
+    ['python -m fastapi serve', false],
+    ['gunicorn main:app --reload', false],
+  ], 'Uvicorn is the common ASGI server. main:app means the app object in main.py, and --reload watches for changes.'),
+  q('fastapi-q5', 'CHECK · FASTAPI', 'When is a function argument treated as a query parameter?', [
+    ['When it is not part of the path and has a simple type', true],
+    ['When it is wrapped in BaseModel', false],
+    ['When it is named request', false],
+    ['When it starts with an underscore', false],
+  ], 'FastAPI treats simple arguments that are not path parameters as query parameters. Pydantic models are read from the body.'),
+  q('fastapi-q6', 'CHECK · FASTAPI', 'What is a Pydantic BaseModel used for in FastAPI?', [
+    ['Validating and parsing request data', true],
+    ['Running SQL migrations', false],
+    ['Starting the ASGI server', false],
+    ['Defining HTML templates', false],
+  ], 'A BaseModel class describes the expected fields and types. FastAPI validates the body and passes a model instance to the handler.'),
+  q('fastapi-q7', 'CHECK · FASTAPI', 'Which are Pydantic features?', [
+    ['Type validation', true],
+    ['Serialization to JSON-compatible data', true],
+    ['Nested models', true],
+    ['Executing raw SQL', false],
+  ], 'Pydantic validates types, serializes models, and supports nested models and constraints. It does not execute SQL.', true),
+  q('fastapi-q8', 'CHECK · FASTAPI', 'What does response_model do?', [
+    ['Validates and filters the response payload', true],
+    ['Selects the database table', false],
+    ['Sets the HTTP server port', false],
+    ['Disables validation for that route', false],
+  ], 'response_model documents and enforces the response shape, removing fields that are not declared in the model.'),
+  q('fastapi-q9', 'CHECK · FASTAPI', 'How do you add a minimum length constraint to a string field?', [
+    ['Field(min_length=3)', true],
+    ['Field(gt=3)', false, 'gt applies to numeric comparisons, not string length.'],
+    ['String(min=3)', false],
+    ['Column(length=3)', false],
+  ], 'In Pydantic v2, Field(min_length=3) enforces a minimum string length. Numeric constraints use gt, ge, lt, and le.'),
+  q('fastapi-q10', 'CHECK · FASTAPI', 'Which status code does FastAPI return by default for request validation errors?', [
+    ['422 Unprocessable Entity', true],
+    ['400 Bad Request', false],
+    ['401 Unauthorized', false],
+    ['500 Internal Server Error', false],
+  ], 'FastAPI returns 422 with details about the invalid fields when Pydantic validation fails.'),
+  c(
+    'fastapi-c3',
+    'FASTAPI · CHAPTER 3',
+    'Async, dependencies, and errors.',
+    [
+      'Use async def for handlers that await I/O. FastAPI runs synchronous handlers in a thread pool, so blocking code does not freeze the event loop. Dependencies declared with Depends centralise shared logic such as database sessions and authentication.',
+      'Raise HTTPException to return a controlled error status and message. BackgroundTasks schedules work after the response is sent, and security helpers such as OAuth2PasswordBearer implement token-based authentication.',
+    ],
+    'Never call blocking libraries inside async handlers without offloading them.',
+    'This chapter covers async handlers, dependency injection, authentication, and error handling.',
+  ),
+  c(
+    'fastapi-c4',
+    'FASTAPI · CHAPTER 4',
+    'Docs, tests, and deployment.',
+    [
+      'FastAPI generates an OpenAPI schema automatically. Swagger UI is served at /docs and ReDoc at /redoc, which makes the API explorable without extra work.',
+      'Test routes with pytest and fastapi.testclient.TestClient. In production, run Uvicorn or Gunicorn with Uvicorn workers behind a reverse proxy, configure CORS deliberately, and terminate HTTPS at the proxy.',
+    ],
+    'Keep the generated OpenAPI schema in your contract tests.',
+    'This chapter covers interactive docs, testing, and production deployment concerns.',
+  ),
+  q('fastapi-q11', 'CHECK · FASTAPI', 'When should a FastAPI handler be declared async def?', [
+    ['When it performs awaitable I/O', true],
+    ['For every handler, even CPU-bound work', false],
+    ['Only for database migrations', false],
+    ['Never; FastAPI requires def', false],
+  ], 'async def is for awaitable I/O. Sync def handlers are executed in a thread pool by FastAPI.'),
+  q('fastapi-q12', 'CHECK · FASTAPI', 'Which tasks are good uses of Depends?', [
+    ['Shared database sessions', true],
+    ['Authentication checks', true],
+    ['Reusable pagination logic', true],
+    ['Rendering HTML templates only', false],
+  ], 'Depends injects shared logic and resources. Template rendering is a separate concern, not a reason to use Depends by itself.', true),
+  q('fastapi-q13', 'CHECK · FASTAPI', 'Which helper implements OAuth2 password bearer token authentication?', [
+    ['OAuth2PasswordBearer', true],
+    ['HTTPBasicBearer', false],
+    ['TokenDepends', false],
+    ['PasswordMiddleware', false],
+  ], 'OAuth2PasswordBearer extracts the bearer token from the Authorization header. It is commonly combined with a token verification dependency.'),
+  q('fastapi-q14', 'CHECK · FASTAPI', 'What are BackgroundTasks used for?', [
+    ['Running work after the response is sent', true],
+    ['Starting the ASGI server', false],
+    ['Validating request bodies', false],
+    ['Serving static files', false],
+  ], 'BackgroundTasks schedule short follow-up work, such as sending an email, without delaying the response.'),
+  q('fastapi-q15', 'CHECK · FASTAPI', 'How do you return a 404 error from a handler?', [
+    ['raise HTTPException(status_code=404, detail="Not found")', true],
+    ['return 404', false],
+    ['raise NotFoundException()', false],
+    ['return {"status": 404}', false],
+  ], 'HTTPException returns a controlled error response with a status code and detail message.'),
+  q('fastapi-q16', 'CHECK · FASTAPI', 'Where are the interactive API docs served by default?', [
+    ['/docs and /redoc', true],
+    ['/swagger and /openapi', false],
+    ['/api/docs only', false],
+    ['/schema and /ui', false],
+  ], 'Swagger UI is at /docs and ReDoc at /redoc. Both are generated from the OpenAPI schema.'),
+  q('fastapi-q17', 'CHECK · FASTAPI', 'Which tools are commonly used to test FastAPI apps?', [
+    ['TestClient', true],
+    ['pytest', true],
+    ['httpx', true],
+    ['Selenium', false],
+  ], 'TestClient, pytest, and httpx cover functional and integration testing. Selenium drives browsers and is not the usual choice for API tests.', true),
+  q('fastapi-q18', 'CHECK · FASTAPI', 'How do you send a GET request with TestClient?', [
+    ['TestClient(app).get("/")', true],
+    ['TestClient(app).request("GET /")', false],
+    ['app.test("/")', false],
+    ['pytest.get(app, "/")', false],
+  ], 'TestClient exposes the HTTP verb methods. Calling .get returns a response object with status_code and json().'),
+  q('fastapi-q19', 'CHECK · FASTAPI', 'What does FastAPI generate from your route and model definitions?', [
+    ['An OpenAPI schema', true],
+    ['A database migration', false],
+    ['A Dockerfile', false],
+    ['A Python virtual environment', false],
+  ], 'FastAPI builds an OpenAPI schema from types and routes, then uses it to render the docs and client tooling.'),
+  q('fastapi-q20', 'CHECK · FASTAPI', 'Which are sound production concerns for a FastAPI service?', [
+    ['Run multiple server workers behind a reverse proxy', true],
+    ['Configure CORS deliberately', true],
+    ['Terminate HTTPS at the proxy', true],
+    ['Disable HTTPS to reduce overhead', false],
+  ], 'Scale with workers behind a proxy, restrict CORS, and terminate HTTPS securely. Disabling HTTPS exposes credentials and data.', true),
+]
+
+export type CourseId = 'dotnet' | 'dotnet-command' | 'docker' | 'fastapi'
+
+export type Course = {
+  id: CourseId
+  meta: LessonMeta
+  frames: LessonFrame[]
+}
+
+export const defaultCourseId: CourseId = 'dotnet'
+
+export const courses: Course[] = [
+  { id: 'dotnet', meta: dotnetMeta, frames: dotnetFrames },
+  { id: 'dotnet-command', meta: commandMeta, frames: commandFrames },
+  { id: 'docker', meta: dockerMeta, frames: dockerFrames },
+  { id: 'fastapi', meta: fastapiMeta, frames: fastapiFrames },
+]
+
+export function getCourse(id: string): Course {
+  return (
+    courses.find((course) => course.id === id) ??
+    courses.find((course) => course.id === defaultCourseId) ??
+    courses[0]
+  )
+}
+
+function resolveCourseId(): CourseId {
+  if (typeof window === 'undefined') return defaultCourseId
+
+  const requested =
+    new URLSearchParams(window.location.search).get('course') ?? window.location.hash.slice(1)
+
+  return courses.some((course) => course.id === requested) ? (requested as CourseId) : defaultCourseId
+}
+
+const activeCourse = getCourse(resolveCourseId())
+
+export const lessonMeta = activeCourse.meta
+export const lessonFrames = activeCourse.frames

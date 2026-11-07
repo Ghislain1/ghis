@@ -17,9 +17,58 @@ const compiled = ts.transpileModule(source, {
 const moduleShim = { exports: {} }
 new Function('module', 'exports', 'require', compiled)(moduleShim, moduleShim.exports, require)
 
-const { lessonMeta, lessonFrames } = moduleShim.exports
+const { lessonMeta, lessonFrames, courses, defaultCourseId, getCourse } = moduleShim.exports
 const questions = lessonFrames.filter((frame) => frame.type === 'question')
 const contents = lessonFrames.filter((frame) => frame.type === 'content')
+
+test('course registry exposes dotnet, dotnet-command, docker and fastapi', () => {
+  const ids = courses.map((course) => course.id)
+  assert.equal(new Set(ids).size, ids.length, 'course ids must be unique')
+  for (const id of ['dotnet', 'dotnet-command', 'docker', 'fastapi']) {
+    assert.ok(ids.includes(id), `missing course ${id}`)
+  }
+  assert.ok(ids.includes(defaultCourseId))
+})
+
+test('every course has metadata and valid questions', () => {
+  for (const course of courses) {
+    assert.ok(course.meta.course, `${course.id} has no course title`)
+    assert.ok(course.meta.lesson, `${course.id} has no lesson title`)
+    assert.ok(course.frames.length > 0, `${course.id} has no frames`)
+
+    const courseQuestions = course.frames.filter((frame) => frame.type === 'question')
+    assert.ok(courseQuestions.length >= 10, `${course.id} has only ${courseQuestions.length} questions`)
+    assert.ok(courseQuestions.some((question) => !question.multi), `${course.id} has no single-answer question`)
+    assert.ok(courseQuestions.some((question) => question.multi), `${course.id} has no multi-answer question`)
+
+    const frameIds = new Set()
+    for (const frame of course.frames) {
+      assert.ok(!frameIds.has(frame.id), `duplicate frame id in ${course.id}: ${frame.id}`)
+      frameIds.add(frame.id)
+
+      if (frame.type === 'question') {
+        const correct = frame.options.filter((option) => option.correct).length
+        assert.ok(correct > 0, `${frame.id} has no correct answer`)
+        if (frame.multi) {
+          assert.ok(correct >= 2, `${frame.id} is multi-answer but has ${correct} correct option(s)`)
+        } else {
+          assert.equal(correct, 1, `${frame.id} is single-answer but has ${correct} correct options`)
+        }
+      }
+    }
+  }
+})
+
+test('getCourse resolves ids and falls back to the default course', () => {
+  assert.equal(getCourse('docker').id, 'docker')
+  assert.ok(getCourse('fastapi').meta.course.includes('FastAPI'))
+  assert.equal(getCourse('unknown-course').id, defaultCourseId)
+})
+
+test('default exports point at the default course', () => {
+  assert.equal(lessonMeta, getCourse(defaultCourseId).meta)
+  assert.equal(lessonFrames, getCourse(defaultCourseId).frames)
+})
 
 test('lesson metadata describes the .NET course', () => {
   assert.ok(lessonMeta.course.includes('.NET'))
