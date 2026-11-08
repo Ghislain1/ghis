@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import type { FrameResult, QuestionFrame as QuestionFrameType } from '../types'
 import { AnswerCard } from './AnswerCard'
@@ -11,10 +12,24 @@ type QuestionFrameProps = {
   onSelect: (optionId: string) => void
 }
 
+function shuffle<T>(items: readonly T[]): T[] {
+  const shuffled = [...items]
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    const current = shuffled[index]
+    shuffled[index] = shuffled[randomIndex]
+    shuffled[randomIndex] = current
+  }
+
+  return shuffled
+}
+
 export function QuestionFrame({ frame, selectedIds, result, onSelect }: QuestionFrameProps) {
   const checked = Boolean(result)
   const locked = result === 'correct'
   const multi = Boolean(frame.multi)
+  const options = useMemo(() => shuffle(frame.options), [frame])
 
   return (
     <Stack spacing={{ xs: 3, sm: 3.5 }}>
@@ -56,7 +71,7 @@ export function QuestionFrame({ frame, selectedIds, result, onSelect }: Question
       </Box>
 
       <Stack spacing={1.5} role={multi ? 'group' : 'radiogroup'} aria-label={frame.question}>
-        {frame.options.map((option, index) => (
+        {options.map((option, index) => (
           <AnswerCard
             key={option.id}
             option={option}
