@@ -1,0 +1,180 @@
+import type { Language } from './language'
+
+export const uiKeys = [
+  'language',
+  'course',
+  'back',
+  'explain',
+  'explainFallback',
+  'explainEnd',
+  'studyNote',
+  'gotIt',
+  'readContinue',
+  'correctContinue',
+  'incorrectRetry',
+  'chooseAnswer',
+  'continue',
+  'finishLesson',
+  'tryAgain',
+  'checkAnswer',
+  'multipleAnswers',
+  'keepInMind',
+  'correct',
+  'notQuite',
+  'adjustSelection',
+  'lessonCompleteEyebrow',
+  'completionTitle',
+  'completionAll',
+  'completionSome',
+  'screens',
+  'conceptChecks',
+  'estimatedTime',
+  'restartLesson',
+  'reviewLastScreen',
+  'completionTip',
+  'screenComplete',
+  'goToScreen',
+  'lessonComplete',
+  'screenOf',
+  'firstScreenToast',
+] as const
+
+export type UiKey = (typeof uiKeys)[number]
+
+export type UiParams = Record<string, string | number>
+
+const en: Record<UiKey, string> = {
+  language: 'Language',
+  course: 'Course',
+  back: 'Back to previous screen',
+  explain: 'Explain this screen',
+  explainFallback: 'Use the lesson content on this screen to guide your answer.',
+  explainEnd:
+    'You have reached the end of “{lesson}”. Use the hexagons above, the course menu, or “Review last screen” to revisit any concept.',
+  studyNote:
+    'Study guidance based on this screen. Always verify with the official documentation for this topic.',
+  gotIt: 'Got it',
+  readContinue: 'Read the concept, then continue.',
+  correctContinue: 'Nice work — continue when you are ready.',
+  incorrectRetry: 'Review the feedback, then try again.',
+  chooseAnswer: 'Choose the best answer, then check it.',
+  continue: 'Continue',
+  finishLesson: 'Finish lesson',
+  tryAgain: 'Try again',
+  checkAnswer: 'Check answer',
+  multipleAnswers: 'Multiple answers',
+  keepInMind: 'Keep in mind',
+  correct: 'Correct!',
+  notQuite: 'Not quite.',
+  adjustSelection: 'Adjust your selection and try again.',
+  lessonCompleteEyebrow: 'LESSON COMPLETE',
+  completionTitle: 'You’re ready to apply it.',
+  completionAll: 'You answered all {count} concept checks correctly.',
+  completionSome:
+    'You answered {correct} of {total} concept checks correctly. Replay any screen to sharpen the rest.',
+  screens: 'Screens',
+  conceptChecks: 'Concept checks',
+  estimatedTime: '{minutes} min',
+  restartLesson: 'Restart lesson',
+  reviewLastScreen: 'Review last screen',
+  completionTip: 'Tip: jump back to any screen with the hexagons at the top.',
+  screenComplete: 'Screen {screen} · complete',
+  goToScreen: 'Go to screen {screen}',
+  lessonComplete: 'Lesson complete',
+  screenOf: 'Screen {current} of {total}',
+  firstScreenToast: 'You are on the first screen. Use the hexagons to jump ahead.',
+}
+
+const de: Record<UiKey, string> = {
+  language: 'Sprache',
+  course: 'Kurs',
+  back: 'Zurück zum vorherigen Bildschirm',
+  explain: 'Diesen Bildschirm erklären',
+  explainFallback: 'Nutze den Inhalt dieses Bildschirms als Orientierung für deine Antwort.',
+  explainEnd:
+    'Du hast das Ende von „{lesson}“ erreicht. Nutze die Sechsecke oben, das Kursmenü oder „Letzten Bildschirm wiederholen“, um ein Konzept erneut anzusehen.',
+  studyNote:
+    'Lernhinweis zu diesem Bildschirm. Prüfe ihn immer anhand der offiziellen Dokumentation zum Thema.',
+  gotIt: 'Verstanden',
+  readContinue: 'Lies das Konzept und fahre dann fort.',
+  correctContinue: 'Gut gemacht – fahre fort, wenn du bereit bist.',
+  incorrectRetry: 'Lies das Feedback und versuche es erneut.',
+  chooseAnswer: 'Wähle die beste Antwort und prüfe sie dann.',
+  continue: 'Weiter',
+  finishLesson: 'Lektion beenden',
+  tryAgain: 'Erneut versuchen',
+  checkAnswer: 'Antwort prüfen',
+  multipleAnswers: 'Mehrere Antworten',
+  keepInMind: 'Beachte',
+  correct: 'Richtig!',
+  notQuite: 'Nicht ganz.',
+  adjustSelection: 'Passe deine Auswahl an und versuche es erneut.',
+  lessonCompleteEyebrow: 'LEKTION ABGESCHLOSSEN',
+  completionTitle: 'Du kannst es jetzt anwenden.',
+  completionAll: 'Du hast alle {count} Wissensprüfungen richtig beantwortet.',
+  completionSome:
+    'Du hast {correct} von {total} Wissensprüfungen richtig beantwortet. Wiederhole beliebige Bildschirme, um dich zu verbessern.',
+  screens: 'Bildschirme',
+  conceptChecks: 'Wissensprüfungen',
+  estimatedTime: '{minutes} Min.',
+  restartLesson: 'Lektion neu starten',
+  reviewLastScreen: 'Letzten Bildschirm wiederholen',
+  completionTip: 'Tipp: Springe mit den Sechsecken oben zu jedem Bildschirm.',
+  screenComplete: 'Bildschirm {screen} · abgeschlossen',
+  goToScreen: 'Zu Bildschirm {screen} springen',
+  lessonComplete: 'Lektion abgeschlossen',
+  screenOf: 'Bildschirm {current} von {total}',
+  firstScreenToast:
+    'Du bist auf dem ersten Bildschirm. Nutze die Sechsecke, um vorzuspringen.',
+}
+
+const fr: Record<UiKey, string> = {
+  language: 'Langue',
+  course: 'Cours',
+  back: 'Retour à l’écran précédent',
+  explain: 'Expliquer cet écran',
+  explainFallback: 'Utilise le contenu de cet écran pour guider ta réponse.',
+  explainEnd:
+    'Tu as atteint la fin de « {lesson} ». Utilise les hexagones ci-dessus, le menu des cours ou « Revoir le dernier écran » pour revoir un concept.',
+  studyNote:
+    'Aide d’étude basée sur cet écran. Vérifie toujours avec la documentation officielle du sujet.',
+  gotIt: 'Compris',
+  readContinue: 'Lis le concept, puis continue.',
+  correctContinue: 'Bien joué — continue quand tu es prêt.',
+  incorrectRetry: 'Relis le retour, puis réessaie.',
+  chooseAnswer: 'Choisis la meilleure réponse, puis vérifie-la.',
+  continue: 'Continuer',
+  finishLesson: 'Terminer la leçon',
+  tryAgain: 'Réessayer',
+  checkAnswer: 'Vérifier la réponse',
+  multipleAnswers: 'Plusieurs réponses',
+  keepInMind: 'À retenir',
+  correct: 'Correct !',
+  notQuite: 'Pas tout à fait.',
+  adjustSelection: 'Ajuste ta sélection et réessaie.',
+  lessonCompleteEyebrow: 'LEÇON TERMINÉE',
+  completionTitle: 'Tu es prêt à l’appliquer.',
+  completionAll: 'Tu as répondu correctement aux {count} vérifications de concepts.',
+  completionSome:
+    'Tu as répondu correctement à {correct} vérifications sur {total}. Rejoue n’importe quel écran pour progresser.',
+  screens: 'Écrans',
+  conceptChecks: 'Vérifications de concepts',
+  estimatedTime: '{minutes} min',
+  restartLesson: 'Recommencer la leçon',
+  reviewLastScreen: 'Revoir le dernier écran',
+  completionTip: 'Astuce : utilise les hexagones en haut pour revenir à n’importe quel écran.',
+  screenComplete: 'Écran {screen} · terminé',
+  goToScreen: 'Aller à l’écran {screen}',
+  lessonComplete: 'Leçon terminée',
+  screenOf: 'Écran {current} sur {total}',
+  firstScreenToast:
+    'Tu es sur le premier écran. Utilise les hexagones pour avancer.',
+}
+
+export const ui: Record<Language, Record<UiKey, string>> = { en, de, fr }
+
+export function translate(language: Language, key: UiKey, params: UiParams = {}): string {
+  return ui[language][key].replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in params ? String(params[name]) : match,
+  )
+}
