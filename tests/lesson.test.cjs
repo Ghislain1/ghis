@@ -21,10 +21,10 @@ const { lessonMeta, lessonFrames, courses, defaultCourseId, getCourse, activeCou
 const questions = lessonFrames.filter((frame) => frame.type === 'question')
 const contents = lessonFrames.filter((frame) => frame.type === 'content')
 
-test('course registry exposes dotnet, dotnet-command, docker and fastapi', () => {
+test('course registry exposes dotnet, dotnet-command, docker, fastapi and flaui', () => {
   const ids = courses.map((course) => course.id)
   assert.equal(new Set(ids).size, ids.length, 'course ids must be unique')
-  for (const id of ['dotnet', 'dotnet-command', 'docker', 'fastapi']) {
+  for (const id of ['dotnet', 'dotnet-command', 'docker', 'fastapi', 'flaui']) {
     assert.ok(ids.includes(id), `missing course ${id}`)
   }
   assert.ok(ids.includes(defaultCourseId))
@@ -62,6 +62,8 @@ test('every course has metadata and valid questions', () => {
 test('getCourse resolves ids and falls back to the default course', () => {
   assert.equal(getCourse('docker').id, 'docker')
   assert.ok(getCourse('fastapi').meta.course.includes('FastAPI'))
+  assert.equal(getCourse('flaui').id, 'flaui')
+  assert.ok(getCourse('flaui').meta.course.includes('FlaUI'))
   assert.equal(getCourse('unknown-course').id, defaultCourseId)
 })
 

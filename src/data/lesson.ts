@@ -3,8 +3,9 @@ import { frames as dotnetFrames, meta as dotnetMeta } from './courses/dotnet'
 import { frames as commandFrames, meta as commandMeta } from './courses/dotnetCommand'
 import { frames as dockerFrames, meta as dockerMeta } from './courses/docker'
 import { frames as fastapiFrames, meta as fastapiMeta } from './courses/fastapi'
+import { frames as flauiFrames, meta as flauiMeta } from './courses/flaui'
 
-export type CourseId = 'dotnet' | 'dotnet-command' | 'docker' | 'fastapi'
+export type CourseId = 'dotnet' | 'dotnet-command' | 'docker' | 'fastapi' | 'flaui'
 
 export type Course = {
   id: CourseId
@@ -19,6 +20,7 @@ export const courses: Course[] = [
   { id: 'dotnet-command', meta: commandMeta, frames: commandFrames },
   { id: 'docker', meta: dockerMeta, frames: dockerFrames },
   { id: 'fastapi', meta: fastapiMeta, frames: fastapiFrames },
+  { id: 'flaui', meta: flauiMeta, frames: flauiFrames },
 ]
 
 export function getCourse(id: string): Course {

@@ -14,13 +14,14 @@ The course registry lives in `src/data/lesson.ts`, and each course has its own m
 | dotnet CLI — Command Line Essentials | `dotnet-command` | 24 | 20 (15 single, 5 multi) | 60 min |
 | Docker — Containers from Zero to Compose | `docker` | 24 | 20 (16 single, 4 multi) | 75 min |
 | FastAPI — Modern Python APIs | `fastapi` | 24 | 20 (15 single, 5 multi) | 75 min |
+| FlaUI — UI Automation for .NET | `flaui` | 110 | 100 (90 single, 10 multi) | 180 min |
 
-Total: **223 screens** and **195 questions**.
+Total: **333 screens** and **295 questions**.
 
 ## Features
 
 - Course picker in the header; switching courses resets progress for the new course.
-- Deep links per course: `?course=docker`, `?course=fastapi`, `?course=dotnet-command` or `#docker`.
+- Deep links per course: `?course=docker`, `?course=fastapi`, `?course=flaui`, `?course=dotnet-command` or `#docker`.
 - Sticky progress hexagons to jump to any screen.
 - Single-answer and multi-answer questions with per-question feedback and explanations.
 - "Explain this screen" study notes authored with the lesson content (no external AI call).
@@ -66,6 +67,7 @@ Use the **Course** dropdown in the sticky header. The selection is written to th
 ```text
 /ghis/?course=docker
 /ghis/?course=fastapi
+/ghis/?course=flaui
 /ghis/#dotnet-command
 ```
 
@@ -98,7 +100,8 @@ Filtering rules:
 │   │       ├── dotnet.ts
 │   │       ├── dotnetCommand.ts
 │   │       ├── docker.ts
-│   │       └── fastapi.ts # Each exports `meta` and `frames`
+│   │       ├── fastapi.ts
+│   │       └── flaui.ts   # Each exports `meta` and `frames`
 │   ├── types.ts           # Frame, question and metadata types
 │   ├── theme.ts           # Material UI theme
 │   ├── App.tsx
@@ -140,7 +143,7 @@ export const frames: LessonFrame[] = [c(/* ... */), q(/* ... */)]
 // src/data/lesson.ts
 import { frames as myFrames, meta as myMeta } from './courses/myCourse'
 
-export type CourseId = 'dotnet' | 'dotnet-command' | 'docker' | 'fastapi' | 'my-course'
+export type CourseId = 'dotnet' | 'dotnet-command' | 'docker' | 'fastapi' | 'flaui' | 'my-course'
 
 export const courses: Course[] = [
   // existing courses...
