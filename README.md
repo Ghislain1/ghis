@@ -6,7 +6,7 @@ A static single-page learning app built with React, TypeScript and Material UI. 
 
 ## Courses
 
-All content lives in `src/data/lesson.ts`. The app opens on the .NET course by default.
+The course registry lives in `src/data/lesson.ts`, and each course has its own module under `src/data/courses/`. The app opens on the .NET course by default.
 
 | Course | ID | Screens | Questions | Est. time |
 | --- | --- | ---: | ---: | ---: |
@@ -92,7 +92,13 @@ Filtering rules:
 │   │   ├── CompletionFrame.tsx
 │   │   └── Eyebrow.tsx
 │   ├── data/
-│   │   └── lesson.ts      # All courses, frames and the course registry
+│   │   ├── frames.ts      # Shared c() / q() frame builders
+│   │   ├── lesson.ts      # Course registry, selection and default exports
+│   │   └── courses/
+│   │       ├── dotnet.ts
+│   │       ├── dotnetCommand.ts
+│   │       ├── docker.ts
+│   │       └── fastapi.ts # Each exports `meta` and `frames`
 │   ├── types.ts           # Frame, question and metadata types
 │   ├── theme.ts           # Material UI theme
 │   ├── App.tsx
@@ -110,20 +116,31 @@ Filtering rules:
 
 ## Adding a course
 
-1. Define a `LessonMeta` and a `LessonFrame[]` in `src/data/lesson.ts` using the `c(...)` and `q(...)` helpers.
-2. Add the new ID to the `CourseId` union.
-3. Register the course in the `courses` array.
+1. Create `src/data/courses/myCourse.ts` exporting only that course's `meta` and `frames`, using the shared helpers from `../frames`.
+2. Add the new ID to the `CourseId` union in `src/data/lesson.ts`.
+3. Import and register the course in the `courses` array in `src/data/lesson.ts`.
 4. Run `npm test` and `npm run build`.
 
 ```ts
-const myMeta: LessonMeta = {
+// src/data/courses/myCourse.ts
+import type { LessonFrame, LessonMeta } from '../../types'
+import { c, q } from '../frames'
+
+export const meta: LessonMeta = {
   course: 'My Course',
   chapter: '4 chapters · 20 questions',
   lesson: 'What the course is about',
   estimatedMinutes: 60,
 }
 
-const myFrames: LessonFrame[] = [c(/* ... */), q(/* ... */)]
+export const frames: LessonFrame[] = [c(/* ... */), q(/* ... */)]
+```
+
+```ts
+// src/data/lesson.ts
+import { frames as myFrames, meta as myMeta } from './courses/myCourse'
+
+export type CourseId = 'dotnet' | 'dotnet-command' | 'docker' | 'fastapi' | 'my-course'
 
 export const courses: Course[] = [
   // existing courses...

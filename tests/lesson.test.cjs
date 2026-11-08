@@ -4,20 +4,20 @@ const fs = require('node:fs')
 const path = require('node:path')
 const ts = require('typescript')
 
+require.extensions['.ts'] = (module, filename) => {
+  const source = fs.readFileSync(filename, 'utf8')
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+    },
+    fileName: filename,
+  }).outputText
+  module._compile(compiled, filename)
+}
+
 const lessonPath = path.join(__dirname, '..', 'src', 'data', 'lesson.ts')
-const source = fs.readFileSync(lessonPath, 'utf8')
-const compiled = ts.transpileModule(source, {
-  compilerOptions: {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES2020,
-  },
-  fileName: 'lesson.ts',
-}).outputText
-
-const moduleShim = { exports: {} }
-new Function('module', 'exports', 'require', compiled)(moduleShim, moduleShim.exports, require)
-
-const { lessonMeta, lessonFrames, courses, defaultCourseId, getCourse, activeCourseId } = moduleShim.exports
+const { lessonMeta, lessonFrames, courses, defaultCourseId, getCourse, activeCourseId } = require(lessonPath)
 const questions = lessonFrames.filter((frame) => frame.type === 'question')
 const contents = lessonFrames.filter((frame) => frame.type === 'content')
 
