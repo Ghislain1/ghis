@@ -9,9 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  MenuItem,
   Snackbar,
-  TextField,
   Typography,
 } from '@mui/material'
 import { activeCourseId, courses, defaultCourseId, getCourse, type CourseId } from '../data/lesson'
@@ -21,6 +19,7 @@ import { ContentFrame } from './ContentFrame'
 import { ProgressHexagons } from './ProgressHexagons'
 import { QuestionFrame } from './QuestionFrame'
 import { TopBar } from './TopBar'
+import { CourseSelector } from './CourseSelector'
 
 export function LessonPage() {
   const [index, setIndex] = useState(0)
@@ -165,20 +164,12 @@ export function LessonPage() {
               gap: 2,
             }}
           >
-            <TextField
-              select
-              size="small"
-              label="Course"
-              value={courseId}
-              onChange={(event) => handleCourseChange(event.target.value as CourseId)}
-              sx={{ minWidth: { xs: '100%', sm: 320 } }}
-            >
-              {courses.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.meta.course}
-                </MenuItem>
-              ))}
-            </TextField>
+            <CourseSelector
+              value={courseId} size='small'
+              courses={courses}
+              handleCourseChange={handleCourseChange}>
+            </CourseSelector>
+
           </Box>
         </Box>
         <ProgressHexagons total={frames.length} current={index} onStepClick={handleStepClick} />
