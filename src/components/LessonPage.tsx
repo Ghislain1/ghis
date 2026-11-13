@@ -16,6 +16,7 @@ import { activeCourseId, courses, defaultCourseId, getCourse, type CourseId } fr
 import type { FrameResult, QuestionFrame as QuestionFrameType } from '../types'
 import { CompletionFrame } from './CompletionFrame'
 import { ContentFrame } from './ContentFrame'
+import { Crossfade } from './Crossfade'
 import { ProgressHexagons } from './ProgressHexagons'
 import { QuestionFrame } from './QuestionFrame'
 import { TopBar } from './TopBar'
@@ -185,18 +186,18 @@ export function LessonPage() {
             pb: { xs: 8, sm: 10 },
           }}
         >
-          {isComplete ? (
-            <CompletionFrame
-              meta={meta}
-              screenCount={frames.length}
-              questionCount={questionFrames.length}
-              correctCount={correctCount}
-              onRestart={handleRestart}
-              onReview={() => setIndex(frames.length - 1)}
-            />
-          ) : frame ? (
-            <Box key={frame.id} sx={{ animation: 'frameIn .50s ease both' }}>
-              {frame.type === 'content' ? (
+          <Crossfade activeKey={isComplete ? 'lesson-complete' : (frame?.id ?? 'empty')}>
+            {isComplete ? (
+              <CompletionFrame
+                meta={meta}
+                screenCount={frames.length}
+                questionCount={questionFrames.length}
+                correctCount={correctCount}
+                onRestart={handleRestart}
+                onReview={() => setIndex(frames.length - 1)}
+              />
+            ) : frame ? (
+              frame.type === 'content' ? (
                 <ContentFrame frame={frame} />
               ) : (
                 <QuestionFrame
@@ -205,9 +206,9 @@ export function LessonPage() {
                   result={result}
                   onSelect={(optionId) => handleSelect(frame, optionId)}
                 />
-              )}
-            </Box>
-          ) : null}
+              )
+            ) : null}
+          </Crossfade>
         </Container>
       </Box>
 

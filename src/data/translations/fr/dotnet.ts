@@ -2076,4 +2076,3 @@ export const frames: CourseTranslation['frames'] = {
     aiNote: 'Relie cette réponse au concept expliqué sur cet écran.',
   },
 }
-}
