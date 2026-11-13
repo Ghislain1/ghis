@@ -16,7 +16,9 @@ type CrossfadeProps = {
 export function Crossfade({ activeKey, children }: CrossfadeProps) {
   const lastKey = useRef(activeKey)
   const lastNode = useRef(children)
+  const inFlight = useRef(false)
   const [outgoing, setOutgoing] = useState<Layer | null>(null)
+  const [skipIn, setSkipIn] = useState(false)
 
   if (lastKey.current === activeKey) {
     lastNode.current = children
@@ -32,8 +34,22 @@ export function Crossfade({ activeKey, children }: CrossfadeProps) {
     lastKey.current = activeKey
     lastNode.current = children
 
+    if (inFlight.current) {
+      inFlight.current = false
+      setOutgoing(null)
+      setSkipIn(true)
+      return
+    }
+
+    inFlight.current = true
+    setSkipIn(false)
     setOutgoing(previous)
-    const timer = window.setTimeout(() => setOutgoing(null), FADE_MS)
+
+    const timer = window.setTimeout(() => {
+      inFlight.current = false
+      setOutgoing(null)
+    }, FADE_MS)
+
     return () => window.clearTimeout(timer)
   }, [activeKey])
 
@@ -60,7 +76,7 @@ export function Crossfade({ activeKey, children }: CrossfadeProps) {
         key={`in:${activeKey}`}
         sx={{
           gridArea: '1 / 1',
-          animation: `frameFadeIn ${FADE_MS}ms ease-out both`,
+          animation: skipIn ? 'none' : `frameFadeIn ${FADE_MS}ms var(--ease-out) both`,
           '@media (prefers-reduced-motion: reduce)': {
             animation: 'none',
           },

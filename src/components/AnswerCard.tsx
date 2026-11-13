@@ -103,15 +103,23 @@ export function AnswerCard({
         cursor: locked ? 'default' : 'pointer',
         opacity: checked && !isCorrectOption && !isWrongSelected ? 0.62 : 1,
         transition:
-          'border-color .18s ease, background-color .18s ease, transform .18s ease, box-shadow .18s ease, opacity .18s ease',
-        '&:hover': locked
+          'border-color var(--duration-hover) ease, background-color var(--duration-hover) ease, opacity var(--duration-hover) ease, transform var(--duration-fast) var(--ease-out)',
+        '@media (hover: hover) and (pointer: fine)': locked
           ? undefined
           : {
-              borderColor: palette.hoverBorder,
-              bgcolor: palette.hoverBg,
-              transform: 'translateY(-1px)',
-              boxShadow: '0 8px 22px rgba(53, 9, 44, 0.08)',
+              '&:hover': {
+                borderColor: palette.hoverBorder,
+                bgcolor: palette.hoverBg,
+              },
             },
+        '&:active': locked
+          ? undefined
+          : {
+              transform: 'scale(0.99)',
+            },
+        '@media (prefers-reduced-motion: reduce)': {
+          '&:active': { transform: 'none' },
+        },
         '&:focus-visible': {
           outline: '3px solid rgba(77, 122, 255, 0.35)',
           outlineOffset: 2,
@@ -131,7 +139,8 @@ export function AnswerCard({
           fontSize: { xs: 13, sm: 14 },
           bgcolor: badgeBg,
           color: selected || isCorrectOption || isWrongSelected ? '#FFFFFF' : 'text.secondary',
-          transition: 'background-color .18s ease, color .18s ease',
+          transition:
+            'background-color var(--duration-hover) ease, color var(--duration-hover) ease',
         }}
       >
         {String.fromCharCode(65 + index)}

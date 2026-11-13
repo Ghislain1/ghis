@@ -46,7 +46,8 @@ export function LessonPage() {
   const result = frame && frame.type === 'question' ? results[frame.id] : undefined
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
   }, [index])
 
   const handleSelect = (question: QuestionFrameType, optionId: string) => {

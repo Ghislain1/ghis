@@ -24,7 +24,10 @@ export function FeedbackPanel({ result, explanation }: FeedbackPanelProps) {
         bgcolor: correct ? 'success.light' : 'error.light',
         border: '1px solid',
         borderColor: correct ? 'rgba(13, 181, 55, 0.35)' : 'rgba(231, 56, 77, 0.3)',
-        animation: 'frameIn .3s ease both',
+        animation: 'frameIn var(--duration-enter) var(--ease-out) both',
+        '@media (prefers-reduced-motion: reduce)': {
+          animation: 'frameFadeIn var(--duration-enter) var(--ease-out) both',
+        },
       }}
     >
       <Box
@@ -38,7 +41,10 @@ export function FeedbackPanel({ result, explanation }: FeedbackPanelProps) {
           justifyContent: 'center',
           color: '#FFFFFF',
           bgcolor: correct ? 'success.main' : 'error.main',
-          animation: 'popIn .35s ease both',
+          animation: 'feedbackPop var(--duration-fast) var(--ease-out) both',
+          '@media (prefers-reduced-motion: reduce)': {
+            animation: 'frameFadeIn var(--duration-fast) var(--ease-out) both',
+          },
         }}
       >
         {correct ? <CheckRoundedIcon fontSize="small" /> : <CloseRoundedIcon fontSize="small" />}

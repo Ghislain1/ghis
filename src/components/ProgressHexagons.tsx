@@ -86,14 +86,20 @@ export function ProgressHexagons({ total, current, onStepClick }: ProgressHexago
                           ? 'primary.main'
                           : 'rgba(53, 9, 44, 0.08)',
                       clipPath: HEX_CLIP,
-                      transition: 'transform .16s ease, background-color .2s ease',
-                      '&:hover': {
-                        transform: 'scale(1.1)',
-                        bgcolor: complete
-                          ? 'secondary.dark'
-                          : active
-                            ? 'primary.dark'
-                            : 'rgba(53, 9, 44, 0.16)',
+                      transition:
+                        'background-color var(--duration-enter) ease, transform var(--duration-fast) var(--ease-out)',
+                      '@media (hover: hover) and (pointer: fine)': {
+                        '&:hover': {
+                          transform: 'scale(1.04)',
+                          bgcolor: complete
+                            ? 'secondary.dark'
+                            : active
+                              ? 'primary.dark'
+                              : 'rgba(53, 9, 44, 0.16)',
+                        },
+                      },
+                      '@media (prefers-reduced-motion: reduce)': {
+                        '&:hover': { transform: 'none' },
                       },
                       '&:focus-visible': { outline: 'none' },
                     }}

@@ -36,6 +36,9 @@ export function CompletionFrame({
         textAlign: 'center',
         py: { xs: 2, sm: 4 },
         animation: 'frameIn var(--duration-enter) var(--ease-out) both',
+        '@media (prefers-reduced-motion: reduce)': {
+          animation: 'frameFadeIn var(--duration-enter) var(--ease-out) both',
+        },
       }}
     >
       <Box
@@ -51,6 +54,9 @@ export function CompletionFrame({
           bgcolor: 'secondary.main',
           clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
           animation: 'popIn var(--duration-celebration) var(--ease-celebrate) both',
+          '@media (prefers-reduced-motion: reduce)': {
+            animation: 'frameFadeIn var(--duration-enter) var(--ease-out) both',
+          },
         }}
       >
         <CheckRoundedIcon sx={{ fontSize: 46, strokeWidth: 2 }} />
