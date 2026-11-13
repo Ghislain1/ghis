@@ -1,3 +1,12 @@
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-celebrate: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --duration-fast: 160ms;
+  --duration-hover: 180ms;
+  --duration-enter: 200ms;
+  --duration-celebration: 500ms;
+}
+
 html,
 body,
 #root {
