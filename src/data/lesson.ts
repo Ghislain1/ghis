@@ -1,11 +1,11 @@
 import type { LessonFrame, LessonMeta } from '../types'
-import { frames as dotnetFrames, meta as dotnetMeta } from './courses/dotnet'
-import { frames as commandFrames, meta as commandMeta } from './courses/dotnetCommand'
-import { frames as dockerFrames, meta as dockerMeta } from './courses/docker'
-import { frames as fastapiFrames, meta as fastapiMeta } from './courses/fastapi'
-import { frames as flauiFrames, meta as flauiMeta } from './courses/flaui'
 
 export type CourseId = 'dotnet' | 'dotnet-command' | 'docker' | 'fastapi' | 'flaui'
+
+export type CourseMeta = {
+  id: CourseId
+  meta: LessonMeta
+}
 
 export type Course = {
   id: CourseId
@@ -15,33 +15,54 @@ export type Course = {
 
 export const defaultCourseId: CourseId = 'dotnet'
 
-export const courses: Course[] = [
-  { id: 'dotnet', meta: dotnetMeta, frames: dotnetFrames },
-  { id: 'dotnet-command', meta: commandMeta, frames: commandFrames },
-  { id: 'docker', meta: dockerMeta, frames: dockerFrames },
-  { id: 'fastapi', meta: fastapiMeta, frames: fastapiFrames },
-  { id: 'flaui', meta: flauiMeta, frames: flauiFrames },
+export const courseMetas: CourseMeta[] = [
+  { id: 'dotnet', meta: { course: '.NET Framework — C# & Modern .NET', chapter: 'Complete course • 16 chapters', lesson: 'C# .NET: CLI, language, ASP.NET Core, EF Core and WPF', estimatedMinutes: 360 } },
+  { id: 'dotnet-command', meta: { course: 'dotnet CLI — Command Line Essentials', chapter: '4 chapters • 20 questions', lesson: 'Master the dotnet command line', estimatedMinutes: 60 } },
+  { id: 'docker', meta: { course: 'Docker — Containers from Zero to Compose', chapter: '4 chapters • 20 questions', lesson: 'Build, run and ship containers', estimatedMinutes: 75 } },
+  { id: 'fastapi', meta: { course: 'FastAPI — Modern Python APIs', chapter: '4 chapters • 20 questions', lesson: 'Build typed, async APIs with FastAPI', estimatedMinutes: 75 } },
+  { id: 'flaui', meta: { course: 'FlaUI — UI Automation for .NET', chapter: '10 chapters • 100 questions', lesson: 'Automate WPF applications end to end with FlaUI', estimatedMinutes: 180 } },
 ]
 
-export function getCourse(id: string): Course {
-  return (
-    courses.find((course) => course.id === id) ??
-    courses.find((course) => course.id === defaultCourseId) ??
-    courses[0]
-  )
+const loaders: Record<CourseId, () => Promise<Course>> = {
+  dotnet: async () => {
+    const mod = await import('./courses/dotnet')
+    return { id: 'dotnet', meta: mod.meta, frames: mod.frames }
+  },
+  'dotnet-command': async () => {
+    const mod = await import('./courses/dotnetCommand')
+    return { id: 'dotnet-command', meta: mod.meta, frames: mod.frames }
+  },
+  docker: async () => {
+    const mod = await import('./courses/docker')
+    return { id: 'docker', meta: mod.meta, frames: mod.frames }
+  },
+  fastapi: async () => {
+    const mod = await import('./courses/fastapi')
+    return { id: 'fastapi', meta: mod.meta, frames: mod.frames }
+  },
+  flaui: async () => {
+    const mod = await import('./courses/flaui')
+    return { id: 'flaui', meta: mod.meta, frames: mod.frames }
+  },
 }
 
-function resolveCourseId(): CourseId {
-  if (typeof window === 'undefined') return defaultCourseId
-
-  const requested =
-    new URLSearchParams(window.location.search).get('course') ?? window.location.hash.slice(1)
-
-  return courses.some((course) => course.id === requested) ? (requested as CourseId) : defaultCourseId
+export function isCourseId(value: string): value is CourseId {
+  return courseMetas.some((course) => course.id === value)
 }
 
-const activeCourse = getCourse(resolveCourseId())
+export function resolveCourseId(
+  search = typeof window === 'undefined' ? '' : window.location.search,
+  hash = typeof window === 'undefined' ? '' : window.location.hash,
+): CourseId {
+  const requested = new URLSearchParams(search).get('course') ?? hash.replace(/^#/, '')
+  return isCourseId(requested) ? requested : defaultCourseId
+}
 
-export const activeCourseId = activeCourse.id
-export const lessonMeta = activeCourse.meta
-export const lessonFrames = activeCourse.frames
+export function courseMetaFor(id: CourseId): LessonMeta {
+  return (courseMetas.find((course) => course.id === id) ?? courseMetas[0]).meta
+}
+
+export async function loadCourse(id: string): Promise<Course> {
+  const courseId = isCourseId(id) ? id : defaultCourseId
+  return loaders[courseId]()
+}

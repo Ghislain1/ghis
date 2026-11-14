@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded'
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded'
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   Dialog,
   DialogActions,
@@ -12,29 +13,89 @@ import {
   Snackbar,
   Typography,
 } from '@mui/material'
-import { activeCourseId, courses, defaultCourseId, getCourse, type CourseId } from '../data/lesson'
-import type { FrameResult, QuestionFrame as QuestionFrameType } from '../types'
+import {
+  courseMetaFor,
+  courseMetas,
+  defaultCourseId,
+  loadCourse,
+  resolveCourseId,
+  type CourseId,
+} from '../data/lesson'
+import type { FrameResult, LessonFrame, LessonMeta, QuestionFrame as QuestionFrameType } from '../types'
 import { CompletionFrame } from './CompletionFrame'
 import { ContentFrame } from './ContentFrame'
+import { CourseSelector } from './CourseSelector'
 import { Crossfade } from './Crossfade'
 import { ProgressHexagons } from './ProgressHexagons'
 import { QuestionFrame } from './QuestionFrame'
 import { TopBar } from './TopBar'
-import { CourseSelector } from './CourseSelector'
+
+type CourseSession = {
+  index: number
+  answers: Record<string, string[]>
+  results: Record<string, FrameResult>
+}
+
+const initialSession: CourseSession = { index: 0, answers: {}, results: {} }
+
+function updateCourseUrl(nextId: CourseId) {
+  const url = new URL(window.location.href)
+  if (nextId === defaultCourseId) {
+    url.searchParams.delete('course')
+  } else {
+    url.searchParams.set('course', nextId)
+  }
+  url.hash = ''
+  window.history.replaceState(null, '', url.toString())
+}
 
 export function LessonPage() {
-  const [index, setIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, string[]>>({})
-  const [results, setResults] = useState<Record<string, FrameResult>>({})
+  const [courseId, setCourseId] = useState<CourseId>(() => resolveCourseId())
+  const [frames, setFrames] = useState<LessonFrame[]>([])
+  const [meta, setMeta] = useState<LessonMeta>(() => courseMetaFor(resolveCourseId()))
+  const [sessions, setSessions] = useState<Partial<Record<CourseId, CourseSession>>>({})
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [reloadToken, setReloadToken] = useState(0)
   const [explainOpen, setExplainOpen] = useState(false)
   const [toast, setToast] = useState('')
-  const [courseId, setCourseId] = useState<CourseId>(activeCourseId)
+  const requestId = useRef(0)
 
-  const { meta, frames } = useMemo(() => getCourse(courseId), [courseId])
+  const session = sessions[courseId] ?? initialSession
+  const { index, answers, results } = session
 
-  const frame = index < frames.length ? frames[index] : undefined
-  const isComplete = index >= frames.length
-  const isLast = index === frames.length - 1
+  useEffect(() => {
+    let cancelled = false
+    const currentRequest = ++requestId.current
+    setLoading(true)
+    setLoadError(null)
+
+    loadCourse(courseId)
+      .then((course) => {
+        if (cancelled || currentRequest !== requestId.current) return
+        setFrames(course.frames)
+        setMeta(course.meta)
+      })
+      .catch((error: unknown) => {
+        if (cancelled || currentRequest !== requestId.current) return
+        const message = error instanceof Error ? error.message : 'Failed to load course.'
+        setLoadError(message)
+      })
+      .finally(() => {
+        if (cancelled || currentRequest !== requestId.current) return
+        setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [courseId, reloadToken])
+
+  const total = frames.length
+  const clampedIndex = total === 0 ? 0 : Math.min(index, total)
+  const frame = !loading && clampedIndex < total ? frames[clampedIndex] : undefined
+  const isComplete = !loading && !loadError && total > 0 && clampedIndex >= total
+  const isLast = total > 0 && clampedIndex === total - 1
 
   const questionFrames = useMemo(
     () => frames.filter((item): item is QuestionFrameType => item.type === 'question'),
@@ -46,84 +107,110 @@ export function LessonPage() {
   const result = frame && frame.type === 'question' ? results[frame.id] : undefined
 
   useEffect(() => {
+    if (loading || loadError) return
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
-  }, [index])
+  }, [clampedIndex, courseId, loading, loadError])
 
-  const handleSelect = (question: QuestionFrameType, optionId: string) => {
-    if (results[question.id] === 'correct') return
+  const updateSession = useCallback(
+    (course: CourseId, updater: (current: CourseSession) => CourseSession) => {
+      setSessions((previous) => ({
+        ...previous,
+        [course]: updater(previous[course] ?? initialSession),
+      }))
+    },
+    [],
+  )
 
-    setAnswers((previous) => {
-      const current = previous[question.id] ?? []
-      const next = question.multi
-        ? current.includes(optionId)
-          ? current.filter((id) => id !== optionId)
-          : [...current, optionId]
-        : [optionId]
+  const handleSelect = useCallback(
+    (question: QuestionFrameType, optionId: string) => {
+      if (results[question.id] === 'correct') return
+      updateSession(courseId, (current) => {
+        const selected = current.answers[question.id] ?? []
+        const nextSelected = question.multi
+          ? selected.includes(optionId)
+            ? selected.filter((id) => id !== optionId)
+            : [...selected, optionId]
+          : [optionId]
 
-      return { ...previous, [question.id]: next }
-    })
+        const nextResults = { ...current.results }
+        if (nextResults[question.id] === 'incorrect') {
+          delete nextResults[question.id]
+        }
 
-    setResults((previous) => {
-      if (previous[question.id] !== 'incorrect') return previous
-      const next = { ...previous }
-      delete next[question.id]
-      return next
-    })
-  }
+        return {
+          ...current,
+          answers: { ...current.answers, [question.id]: nextSelected },
+          results: nextResults,
+        }
+      })
+    },
+    [courseId, results, updateSession],
+  )
 
-  const handleCheck = (question: QuestionFrameType) => {
-    const selected = answers[question.id] ?? []
-    const correctIds = question.options.filter((option) => option.correct).map((option) => option.id)
-    const isCorrect =
-      selected.length === correctIds.length && correctIds.every((id) => selected.includes(id))
+  const handleCheck = useCallback(
+    (question: QuestionFrameType) => {
+      const selected = answers[question.id] ?? []
+      const correctIds = question.options.filter((option) => option.correct).map((option) => option.id)
+      const isCorrect =
+        selected.length === correctIds.length && correctIds.every((id) => selected.includes(id))
 
-    setResults((previous) => ({
-      ...previous,
-      [question.id]: isCorrect ? 'correct' : 'incorrect',
+      updateSession(courseId, (current) => ({
+        ...current,
+        results: {
+          ...current.results,
+          [question.id]: isCorrect ? 'correct' : 'incorrect',
+        },
+      }))
+    },
+    [answers, courseId, updateSession],
+  )
+
+  const handleContinue = useCallback(() => {
+    updateSession(courseId, (current) => ({
+      ...current,
+      index: Math.min(current.index + 1, Math.max(total, 0)),
     }))
-  }
+  }, [courseId, total, updateSession])
 
-  const handleContinue = () => {
-    setIndex((current) => Math.min(current + 1, frames.length))
-  }
+  const handleStepClick = useCallback(
+    (step: number) => {
+      if (total === 0) return
+      updateSession(courseId, (current) => ({
+        ...current,
+        index: Math.max(0, Math.min(step, total - 1)),
+      }))
+    },
+    [courseId, total, updateSession],
+  )
 
-  const handleStepClick = (step: number) => {
-    setIndex(Math.max(0, Math.min(step, frames.length - 1)))
-  }
-
-  const handleBack = () => {
-    if (index > 0) {
-      setIndex((current) => current - 1)
+  const handleBack = useCallback(() => {
+    if (clampedIndex > 0) {
+      updateSession(courseId, (current) => ({ ...current, index: Math.max(0, current.index - 1) }))
     } else {
       setToast('You are on the first screen. Use the hexagons to jump ahead.')
     }
-  }
+  }, [clampedIndex, courseId, updateSession])
 
-  const handleRestart = () => {
-    setAnswers({})
-    setResults({})
-    setIndex(0)
-  }
+  const handleRestart = useCallback(() => {
+    setSessions((previous) => ({ ...previous, [courseId]: initialSession }))
+  }, [courseId])
 
-  const handleCourseChange = (nextId: CourseId) => {
-    if (nextId === courseId) return
+  const handleCourseChange = useCallback(
+    (nextId: CourseId) => {
+      if (nextId === courseId) return
+      setExplainOpen(false)
+      setCourseId(nextId)
+      setMeta(courseMetaFor(nextId))
+      setFrames([])
+      updateCourseUrl(nextId)
+    },
+    [courseId],
+  )
 
-    setCourseId(nextId)
-    setAnswers({})
-    setResults({})
-    setIndex(0)
-    setExplainOpen(false)
-
-    const url = new URL(window.location.href)
-    if (nextId === defaultCourseId) {
-      url.searchParams.delete('course')
-    } else {
-      url.searchParams.set('course', nextId)
-    }
-    url.hash = ''
-    window.history.replaceState(null, '', url.toString())
-  }
+  const handleRetryLoad = useCallback(() => {
+    setReloadToken((value) => value + 1)
+  }, [])
 
   const explainText = isComplete
     ? `You have reached the end of “${meta.lesson}”. Use the hexagons above, the course menu, or “Review last screen” to revisit any concept.`
@@ -136,6 +223,14 @@ export function LessonPage() {
     if (result === 'incorrect') return 'Review the feedback, then try again.'
     return 'Choose the best answer, then check it.'
   })()
+
+  const contentKey = loadError
+    ? `error:${courseId}`
+    : loading
+      ? `loading:${courseId}`
+      : isComplete
+        ? `lesson-complete:${courseId}`
+        : (frame?.id ?? `empty:${courseId}`)
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
@@ -167,14 +262,15 @@ export function LessonPage() {
             }}
           >
             <CourseSelector
-              value={courseId} size='small'
-              courses={courses}
-              handleCourseChange={handleCourseChange}>
-            </CourseSelector>
-
+              value={courseId}
+              size="small"
+              courses={courseMetas}
+              disabled={loading}
+              onChange={handleCourseChange}
+            />
           </Box>
         </Box>
-        <ProgressHexagons total={frames.length} current={index} onStepClick={handleStepClick} />
+        <ProgressHexagons total={total} current={clampedIndex} onStepClick={handleStepClick} />
       </Box>
 
       <Box component="main" sx={{ flexGrow: 1 }}>
@@ -187,15 +283,27 @@ export function LessonPage() {
             pb: { xs: 8, sm: 10 },
           }}
         >
-          <Crossfade activeKey={isComplete ? 'lesson-complete' : (frame?.id ?? 'empty')}>
-            {isComplete ? (
+          <Crossfade activeKey={contentKey}>
+            {loadError ? (
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <Typography variant="h6" sx={{ mb: 1 }}>Unable to load course</Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 2 }}>{loadError}</Typography>
+                <Button variant="contained" onClick={handleRetryLoad}>
+                  Try again
+                </Button>
+              </Box>
+            ) : loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <CircularProgress aria-label="Loading course" />
+              </Box>
+            ) : isComplete ? (
               <CompletionFrame
                 meta={meta}
                 screenCount={frames.length}
                 questionCount={questionFrames.length}
                 correctCount={correctCount}
                 onRestart={handleRestart}
-                onReview={() => setIndex(frames.length - 1)}
+                onReview={() => handleStepClick(frames.length - 1)}
               />
             ) : frame ? (
               frame.type === 'content' ? (
@@ -208,12 +316,16 @@ export function LessonPage() {
                   onSelect={(optionId) => handleSelect(frame, optionId)}
                 />
               )
-            ) : null}
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <Typography sx={{ color: 'text.secondary' }}>No content available.</Typography>
+              </Box>
+            )}
           </Crossfade>
         </Container>
       </Box>
 
-      {!isComplete && frame ? (
+      {!isComplete && frame && !loading && !loadError ? (
         <Box
           component="footer"
           sx={{

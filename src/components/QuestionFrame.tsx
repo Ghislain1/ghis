@@ -12,11 +12,31 @@ type QuestionFrameProps = {
   onSelect: (optionId: string) => void
 }
 
-function shuffle<T>(items: readonly T[]): T[] {
+function hashSeed(value: string): number {
+  let hash = 2166136261
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
+}
+
+function mulberry32(seed: number) {
+  let t = seed
+  return () => {
+    t += 0x6d2b79f5
+    let r = Math.imul(t ^ (t >>> 15), 1 | t)
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r)
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function shuffleDeterministic<T>(items: readonly T[], seedKey: string): T[] {
   const shuffled = [...items]
+  const random = mulberry32(hashSeed(seedKey))
 
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1))
+    const randomIndex = Math.floor(random() * (index + 1))
     const current = shuffled[index]
     shuffled[index] = shuffled[randomIndex]
     shuffled[randomIndex] = current
@@ -29,7 +49,7 @@ export function QuestionFrame({ frame, selectedIds, result, onSelect }: Question
   const checked = Boolean(result)
   const locked = result === 'correct'
   const multi = Boolean(frame.multi)
-  const options = useMemo(() => shuffle(frame.options), [frame])
+  const options = useMemo(() => shuffleDeterministic(frame.options, frame.id), [frame])
 
   return (
     <Stack spacing={{ xs: 3, sm: 3.5 }}>
