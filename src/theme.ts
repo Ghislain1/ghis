@@ -92,6 +92,11 @@ export const theme = createTheme({
         root: { borderRadius: 10 },
       },
     },
+    MuiPaper: {
+      styleOverrides: {
+        root: { backgroundImage: 'none' },
+      },
+    },
     MuiDialog: {
       styleOverrides: {
         paper: { borderRadius: 22 },
